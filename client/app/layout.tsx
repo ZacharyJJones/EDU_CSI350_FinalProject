@@ -9,6 +9,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <header>
+          <h1><em>Zack J's Final Project Spring 2025</em></h1>
+          <nav>
+            <a className="navlink" href="/">Home</a>
+            <a className="navlink" href="/fooditems">Food Items</a>
+          </nav>
+        </header>
         {children}
       </body>
     </html>

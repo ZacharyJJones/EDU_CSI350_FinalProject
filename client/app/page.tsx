@@ -16,13 +16,6 @@ function Home() {
   return (
     <div>
       <div>This is the home page!</div>
-      <div>
-        {
-          portionTypes.map((x, index) => (
-            <div key={index}>{x.name}: {x.kcal}kcal</div>
-          ))
-        }
-      </div>
     </div>
   );
 }
