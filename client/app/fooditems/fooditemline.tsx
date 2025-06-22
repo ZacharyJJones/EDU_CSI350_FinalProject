@@ -12,7 +12,7 @@ function FoodItemLine(props) {
         <span className="subarea">From: {props.data.source}</span>
         <span className="subarea">Unit: {props.data.unit}</span>
         <span className="subarea">Price: ${props.data.unit_price}</span>
-        <a className="action-click" href="#edit">Edit&nbsp;/&nbsp;Delete</a>
+        <a onClick={props.loadForEditing} className="action-click" href="#edit">Edit&nbsp;/&nbsp;Delete</a>
       </div>
       <br/>
     </div>
