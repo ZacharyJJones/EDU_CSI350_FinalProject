@@ -31,16 +31,18 @@ class FoodItemModel(db.Model):
    pass
 
 foodItem_args = reqparse.RequestParser()
+foodItem_args.add_argument("id", type = int, required = False)
 foodItem_args.add_argument("type", type = int, required = True, help = "Food Item must have a portion type (Fat/Protein/etc)")
 
 foodItem_args.add_argument("name", type = str, required = True, help = "Food Item name cannot be blank.")
 foodItem_args.add_argument("source", type = str, required = False)
+foodItem_args.add_argument("unit", type = str, required = False)
 
-foodItem_args.add_argument("unit", type = int, required = False)
 foodItem_args.add_argument("unit_portions", type = float, required = True)
 foodItem_args.add_argument("unit_price", type = float, required = True)
 
 foodItem_fields = {
+   "id": fields.Integer,
    "type": fields.Integer,
    "name": fields.String,
    "source": fields.String,
@@ -57,9 +59,25 @@ class FoodItems(Resource):
       workout = FoodItemModel.query.all()
       return workout
 
-   @marshal_with(foodItem_fields)
+   # @marshal_with(foodItem_fields)
    def post(self):
       args = foodItem_args.parse_args()
+
+      # When using an id that is "None" or does not exist...
+      # ... in db, the result will be a null object - "None" in python.
+      # - In short, you can safely query database without checking input
+      existing_entry = db.session.get(FoodItemModel, args["id"])
+
+      if existing_entry is None:
+         # create new entry
+         pass
+      else:
+         # update existing
+         pass
+
+
+      return [{"value":args["id"]}], 201
+
       workout = FoodItemModel(type=args["type"], name=args["name"], source = args["source"], unit=args["unit"], unit_portions=args["unit_portions"], unit_price=args["unit_price"])
       db.session.add(workout)
       db.session.commit()
@@ -69,6 +87,17 @@ class FoodItems(Resource):
    pass
 api.add_resource(FoodItems, "/api/fooditems")
 
+@app.route("/api/fooditems/delete", methods=["POST"])
+def delete_food_item():
+   print("here!")
+   id_to_delete = request.form.get("id")
+   existing_entry = db.session.get(FoodItemModel, id_to_delete)
+   if existing_entry is None:
+      return None, 403 # 403=Forbidden
+   db.session.delete(existing_entry)
+   db.session.commit()
+   return None, 200 # 200=OK
+   pass
 
 
 

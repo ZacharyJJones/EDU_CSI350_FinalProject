@@ -9,7 +9,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header>
+        <header className="subarea">
           <h1><em>Zack J's Final Project Spring 2025</em></h1>
           <nav>
             <a className="navlink" href="/">Home</a>
