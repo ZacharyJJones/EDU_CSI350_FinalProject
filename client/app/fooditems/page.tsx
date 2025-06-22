@@ -1,7 +1,7 @@
 'use client'
 
 import React, {useEffect, useState} from "react";
-import "./fooditem_linedisplay"
+import FoodItemLine from "./fooditemline";
 
 function FoodItems() {
 
@@ -40,7 +40,7 @@ function FoodItems() {
       </div>
       <div>
         {
-          foodItems.map((x, i) => <FoodItem_LineDisplay key={i} data={x} />)
+          foodItems.map((x, i) => <FoodItemLine key={i} data={x} />)
         }
       </div>
     </div>
