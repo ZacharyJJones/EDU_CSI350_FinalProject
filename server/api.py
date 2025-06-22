@@ -16,7 +16,6 @@ api = Api(app)
 # Models
 class FoodItemModel(db.Model):
    id = db.Column(db.Integer, primary_key = True)
-   type = db.Column(db.Integer)
 
    name = db.Column(db.String(80))
    source = db.Column(db.String(80), nullable=True)
@@ -26,24 +25,22 @@ class FoodItemModel(db.Model):
    unit_price = db.Column(db.Float)
 
    def __repr__(self):
-      return f"\"FoodItem(id:{self.id},typeID:{self.type},name:{self.name},source:{self.source},unit:{self.unit},portions:{self.unit_portions},price:{self.unit_price})"
+      return f"\"FoodItem(id:{self.id},name:{self.name},source:{self.source},unit:{self.unit},portions:{self.unit_portions},price:{self.unit_price})"
 
    pass
 
 foodItem_args = reqparse.RequestParser()
-foodItem_args.add_argument("id", type = int, required = False, location="Form")
-foodItem_args.add_argument("type", type = int, required = True, help = "Food Item must have a portion type (Fat/Protein/etc)", location="Form")
+foodItem_args.add_argument("id", type = int, required = False, location="form")
 
-foodItem_args.add_argument("name", type = str, required = True, help = "Food Item name cannot be blank.", location="Form")
-foodItem_args.add_argument("source", type = str, required = False, location="Form")
-foodItem_args.add_argument("unit", type = str, required = False, location="Form")
+foodItem_args.add_argument("name", type = str, required = True, help = "Food Item name cannot be blank.", location="form")
+foodItem_args.add_argument("source", type = str, required = False, location="form")
+foodItem_args.add_argument("unit", type = str, required = False, location="form")
 
-foodItem_args.add_argument("unit_portions", type = float, required = True, location="Form")
-foodItem_args.add_argument("unit_price", type = float, required = True, location="Form")
+foodItem_args.add_argument("unit_portions", type = float, required = True, location="form")
+foodItem_args.add_argument("unit_price", type = float, required = True, location="form")
 
 foodItem_fields = {
    "id": fields.Integer,
-   "type": fields.Integer,
    "name": fields.String,
    "source": fields.String,
    "unit": fields.String,
@@ -62,7 +59,10 @@ class FoodItems(Resource):
    @marshal_with(foodItem_fields)
    def post(self):
       args = foodItem_args.parse_args()
-      print("entry!")
+
+      if args["name"] == "":
+         return { "name": "ERROR: Food name was left blank" }, 403 # 403=Forbidden
+
 
       # When using an id that is "None" or does not exist...
       # ... in db, the result will be a null object - "None" in python.
@@ -72,7 +72,6 @@ class FoodItems(Resource):
       if existing_entry is None:
          # Does not exist, can add new one
          new_item = FoodItemModel(
-            type=args["type"],
             name=args["name"],
             source = args["source"],
             unit=args["unit"],
@@ -84,7 +83,6 @@ class FoodItems(Resource):
          return new_item, 200
 
       # Exists, update values
-      existing_entry.type = args["type"]
       existing_entry.name = args["name"]
       existing_entry.source = args["source"]
       existing_entry.unit = args["unit"]

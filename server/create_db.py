@@ -7,7 +7,6 @@ with app.app_context():
     # Fill with some data ahead of use
     for x in db_data_food_items:
         food_item = FoodItemModel(
-            type = x["type"],
             name = x["name"],
             source = x["source"],
             unit = x["unit"],
