@@ -123,7 +123,7 @@ birthday_args.add_argument("id", type = int, required = False, location="form")
 birthday_args.add_argument("name", type = str, required = True, help = "Name for birthday cannot be blank.", location="form")
 birthday_args.add_argument("year", type = int, required = True, help = "Birth year must be provided.", location="form")
 birthday_args.add_argument("month", type = int, required = False, location="form")
-birthday_args.add_argument("date", type = int, required = False, location="form")
+birthday_args.add_argument("day", type = int, required = False, location="form")
 
 birthday_fields = {
    "id": fields.Integer,
@@ -264,7 +264,7 @@ class Pens(Resource):
 api.add_resource(Pens, "/api/pens")
 
 @app.route("/api/pens/delete", methods=["POST"])
-def delete_food_item():
+def delete_pen_item():
    id_to_delete = int(request.form.get("id"))
    existing_entry = db.session.get(PenModel, id_to_delete)
    if existing_entry is None:

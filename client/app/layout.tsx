@@ -14,6 +14,8 @@ export default function RootLayout({
           <nav>
             <a className="action-click" href="/">Home</a>
             <a className="action-click" href="/fooditems">Food Items</a>
+            <a className="action-click" href="/birthdays">Birthdays</a>
+            <a className="action-click" href="/pens">Pens</a>
           </nav>
         </header>
         {children}
