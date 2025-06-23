@@ -229,9 +229,9 @@ class Pens(Resource):
       args = penItem_args.parse_args()
 
       if args["brand"] == "":
-         return { "name": "ERROR: Pen Brand was left blank" }, 403 # 403=Forbidden
+         return { "brand": "ERROR: Pen Brand was left blank" }, 403 # 403=Forbidden
       if args["model"] == "":
-         return { "name": "ERROR: Pen Model was left blank" }, 403 # 403=Forbidden
+         return { "brand": "ERROR: Pen Model was left blank" }, 403 # 403=Forbidden
 
       # When using an id that is "None" or does not exist...
       # ... in db, the result will be a null object - "None" in python.
@@ -241,11 +241,10 @@ class Pens(Resource):
       if existing_entry is None:
          # Does not exist, can add new one
          new_item = PenModel(
-            name=args["name"],
-            source = args["source"],
-            unit=args["unit"],
-            unit_portions=args["unit_portions"],
-            unit_price=args["unit_price"]
+            brand=args["brand"],
+            model = args["model"],
+            color=args["color"],
+            point=args["point"]
          )
          db.session.add(new_item)
          db.session.commit()
