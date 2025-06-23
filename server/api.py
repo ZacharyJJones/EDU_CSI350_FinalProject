@@ -13,20 +13,19 @@ db = SQLAlchemy(app)
 api = Api(app)
 
 
-# Models
+# ===========================================================================
+# FoodItem Model
 class FoodItemModel(db.Model):
    id = db.Column(db.Integer, primary_key = True)
 
    name = db.Column(db.String(80))
    source = db.Column(db.String(80), nullable=True)
-
    unit = db.Column(db.String(40), nullable=True)
    unit_portions = db.Column(db.Float)
    unit_price = db.Column(db.Float)
 
    def __repr__(self):
       return f"\"FoodItem(id:{self.id},name:{self.name},source:{self.source},unit:{self.unit},portions:{self.unit_portions},price:{self.unit_price})"
-
    pass
 
 foodItem_args = reqparse.RequestParser()
@@ -48,7 +47,6 @@ foodItem_fields = {
    "unit_price": fields.Float
 }
 
-# Routes & other methods
 class FoodItems(Resource):
 
    @marshal_with(foodItem_fields)
@@ -62,7 +60,6 @@ class FoodItems(Resource):
 
       if args["name"] == "":
          return { "name": "ERROR: Food name was left blank" }, 403 # 403=Forbidden
-
 
       # When using an id that is "None" or does not exist...
       # ... in db, the result will be a null object - "None" in python.
@@ -98,8 +95,88 @@ api.add_resource(FoodItems, "/api/fooditems")
 @app.route("/api/fooditems/delete", methods=["POST"])
 def delete_food_item():
    id_to_delete = int(request.form.get("id"))
-   print(id_to_delete)
    existing_entry = db.session.get(FoodItemModel, id_to_delete)
+   if existing_entry is None:
+      return { "error": "No record found" }, 403 # 403=Forbidden
+   db.session.delete(existing_entry)
+   db.session.commit()
+   return { "success": "Entry was deleted" }, 200 # 200=OK
+   pass
+
+# ===========================================================================
+# Birthday Model
+class BirthdayModel(db.Model):
+   id = db.Column(db.Integer, primary_key = True)
+
+   name = db.Column(db.String(80))
+   year = db.Column(db.Integer)
+   month = db.Column(db.Integer)
+   day = db.Column(db.Integer)
+
+   def __repr__(self):
+      return f"\"Birthday(id:{self.id},name:{self.name},year:{self.year},month:{self.month},day:{self.day}"
+   pass
+
+birthday_args = reqparse.RequestParser()
+birthday_args.add_argument("id", type = int, required = False, location="form")
+
+birthday_args.add_argument("name", type = str, required = True, help = "Name for birthday cannot be blank.", location="form")
+birthday_args.add_argument("year", type = int, required = True, help = "Birth year must be provided.", location="form")
+birthday_args.add_argument("month", type = int, required = False, location="form")
+birthday_args.add_argument("date", type = int, required = False, location="form")
+
+birthday_fields = {
+   "id": fields.Integer,
+   "name": fields.String,
+   "year": fields.Integer,
+   "month": fields.Integer,
+   "day": fields.Integer
+}
+
+class Birthdays(Resource):
+
+   @marshal_with(birthday_fields)
+   def get(self):
+      birthdays = BirthdayModel.query.all()
+      return birthdays
+
+   @marshal_with(birthday_fields)
+   def post(self):
+      args = birthday_args.parse_args()
+
+      if args["name"] == "":
+         return { "name": "ERROR: Birthday name was left blank" }, 403 # 403=Forbidden
+
+      existing_entry = db.session.get(BirthdayModel, args["id"])
+
+      if existing_entry is None:
+         # Does not exist, can add new one
+         new_item = BirthdayModel(
+            name=args["name"],
+            year = args["year"],
+            month=args["month"],
+            day=args["day"]
+         )
+         db.session.add(new_item)
+         db.session.commit()
+         return new_item, 200
+
+      # Exists, update values
+      existing_entry.name = args["name"]
+      existing_entry.year = args["year"]
+      existing_entry.month = args["month"]
+      existing_entry.day = args["day"]
+
+      db.session.commit()
+      return existing_entry, 200
+
+   pass
+api.add_resource(Birthdays, "/api/birthdays")
+
+@app.route("/api/birthdays/delete", methods=["POST"])
+def delete_food_item():
+   id_to_delete = int(request.form.get("id"))
+   existing_entry = db.session.get(BirthdayModel, id_to_delete)
    if existing_entry is None:
       return { "error": "No record found" }, 403 # 403=Forbidden
    db.session.delete(existing_entry)
@@ -109,6 +186,20 @@ def delete_food_item():
 
 
 
+
+# ===========================================================================
+# FoodItem Model
+
+
+
+
+
+
+
+
+
+
+# ===========================================================================
 # Special case of app.route for this because I don't need a database table for the type defs.
 @app.route("/api/portiontypes", methods=["GET"])
 def get_portion_types():
@@ -145,9 +236,6 @@ def get_portion_types():
       },
    ]
    return jsonify(ret_types), 201
-
-
-
 
 # running server
 if __name__ == '__main__':
