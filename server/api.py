@@ -14,7 +14,7 @@ api = Api(app)
 
 
 # ===========================================================================
-# FoodItem Model
+# Item Model
 class FoodItemModel(db.Model):
    id = db.Column(db.Integer, primary_key = True)
 
@@ -51,8 +51,8 @@ class FoodItems(Resource):
 
    @marshal_with(foodItem_fields)
    def get(self):
-      workout = FoodItemModel.query.all()
-      return workout
+      food = FoodItemModel.query.all()
+      return food
 
    @marshal_with(foodItem_fields)
    def post(self):
@@ -174,7 +174,7 @@ class Birthdays(Resource):
 api.add_resource(Birthdays, "/api/birthdays")
 
 @app.route("/api/birthdays/delete", methods=["POST"])
-def delete_food_item():
+def delete_birthday_item():
    id_to_delete = int(request.form.get("id"))
    existing_entry = db.session.get(BirthdayModel, id_to_delete)
    if existing_entry is None:
@@ -188,15 +188,91 @@ def delete_food_item():
 
 
 # ===========================================================================
-# FoodItem Model
+# Pen Model
+class PenModel(db.Model):
+   id = db.Column(db.Integer, primary_key = True)
 
+   brand = db.Column(db.String(80))
+   model = db.Column(db.String(80), nullable=True)
+   color = db.Column(db.String(40), nullable=True)
+   point = db.Column(db.Float)
 
+   def __repr__(self):
+      return f"\"Pen(id:{self.id},brand:{self.brand},model:{self.model},color:{self.color},point:{self.point})"
+   pass
 
+penItem_args = reqparse.RequestParser()
+penItem_args.add_argument("id", type = int, required = False, location="form")
 
+penItem_args.add_argument("brand", type = str, required = True, help = "Pen Brand cannot be blank.", location="form")
+penItem_args.add_argument("model", type = str, required = True, help = "Pen Model cannot be blank.", location="form")
+penItem_args.add_argument("color", type = str, required = False, location="form")
+penItem_args.add_argument("point", type = float, required = True, help = "Pen point thickness must be defined (mm).", location="form")
 
+penItem_fields = {
+   "id": fields.Integer,
+   "brand": fields.String,
+   "model": fields.String,
+   "color": fields.String,
+   "point": fields.Float
+}
 
+class Pens(Resource):
 
+   @marshal_with(penItem_fields)
+   def get(self):
+      pen = PenModel.query.all()
+      return pen
 
+   @marshal_with(penItem_fields)
+   def post(self):
+      args = penItem_args.parse_args()
+
+      if args["brand"] == "":
+         return { "name": "ERROR: Pen Brand was left blank" }, 403 # 403=Forbidden
+      if args["model"] == "":
+         return { "name": "ERROR: Pen Model was left blank" }, 403 # 403=Forbidden
+
+      # When using an id that is "None" or does not exist...
+      # ... in db, the result will be a null object - "None" in python.
+      # - In short, you can safely query database without checking input
+      existing_entry = db.session.get(PenModel, args["id"])
+
+      if existing_entry is None:
+         # Does not exist, can add new one
+         new_item = PenModel(
+            name=args["name"],
+            source = args["source"],
+            unit=args["unit"],
+            unit_portions=args["unit_portions"],
+            unit_price=args["unit_price"]
+         )
+         db.session.add(new_item)
+         db.session.commit()
+         return new_item, 200
+
+      # Exists, update values
+      existing_entry.brand = args["brand"]
+      existing_entry.model = args["model"]
+      existing_entry.color = args["color"]
+      existing_entry.point = args["point"]
+
+      db.session.commit()
+      return existing_entry, 200
+
+   pass
+api.add_resource(Pens, "/api/pens")
+
+@app.route("/api/pens/delete", methods=["POST"])
+def delete_food_item():
+   id_to_delete = int(request.form.get("id"))
+   existing_entry = db.session.get(PenModel, id_to_delete)
+   if existing_entry is None:
+      return { "error": "No record found" }, 403 # 403=Forbidden
+   db.session.delete(existing_entry)
+   db.session.commit()
+   return { "success": "Entry was deleted" }, 200 # 200=OK
+   pass
 
 
 # ===========================================================================
